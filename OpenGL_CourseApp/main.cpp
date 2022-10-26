@@ -14,7 +14,7 @@ const char* WINDOW_TITLE = "Test Window";
 
 const float TO_RADIANS = 3.14159265358979323846f / 180.f;
 
-GLuint vaoId, vboId, shaderId, uniformModel;
+GLuint vaoId, vboId, iboId, shaderId, uniformModel, uniformProjection;
 
 bool direction = true;
 float triOffset = 0.0f;
@@ -36,31 +36,47 @@ static const char* vShader = R"(
 
 layout (location = 0) in vec3 pos;
 
+out vec4 vColour;
+
 uniform mat4 model;
+uniform mat4 projection;
 
 void main()
 {
-	gl_Position = model * vec4(pos, 1.0);
+	gl_Position = projection * model * vec4(pos, 1.0f);
+	vColour = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);
 })";
 
 static const char* fShader = R"(
 #version 330
-																
+
+in vec4 vColour;
+
 out vec4 colour;
-																
+
 void main()
 {
-	colour = vec4(1.0, 0.0, 0.0, 1.0);
+	colour = vColour;
 })";
 
 void CreateTriangle()
 {
+	unsigned int indices[] = {	0, 3, 1,
+								1, 3, 2,
+								2, 3, 0,
+								0, 1, 2 };
+
 	GLfloat vertices[] = { -1.f, -1.f, 0.f,
+							0.f, -1.f, 1.f,
 							1.f, -1.f, 0.f,
 							0.f, 1.f, 0.f };
 
 	glGenVertexArrays(1, &vaoId);
 	glBindVertexArray(vaoId);
+
+	glGenBuffers(1, &iboId);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	glGenBuffers(1, &vboId);
 	glBindBuffer(GL_ARRAY_BUFFER, vboId);
@@ -72,6 +88,8 @@ void CreateTriangle()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void AddShader(GLuint shaderProgram, const char* shaderCode, GLenum shaderType)
@@ -134,6 +152,9 @@ void CompileShaders()
 		printf("Error validating program: %s\n", eLog);
 		return;
 	}
+
+	uniformModel = glGetUniformLocation(shaderId, "model");
+	uniformProjection = glGetUniformLocation(shaderId, "projection");
 }
 
 int main()
@@ -179,11 +200,15 @@ int main()
 		return 1;
 	}
 
+	glEnable(GL_DEPTH_TEST);
+
 	//Setup Viewport size
 	glViewport(0, 0, bufferWidth, bufferHeight);
 
 	CreateTriangle();
 	CompileShaders();
+
+	glm::mat4 projection = glm::perspective(45.0f, static_cast<GLfloat>(bufferWidth / bufferHeight), 0.1f, 100.0f);
 
 	while (!glfwWindowShouldClose(mainWindow))
 	{
@@ -219,23 +244,27 @@ int main()
 			sizeDirection = false;
 
 		//Clear Window
-		glClearColor(0.f, 0.f, 0.f, 1.f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClearColor(1.f, 1.f, 1.f, 1.f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(shaderId);
 
 		glm::mat4 model(1.0f);
-		model = translate(model, glm::vec3(triOffset, 0.f, 0.f));
-		model = rotate(model, currentAngle * TO_RADIANS, glm::vec3(0.f, 0.f, 1.f));
-		model = scale(model, glm::vec3(currentSize, currentSize, 1.f));
+		model = translate(model, glm::vec3(0.f, 0.f, -2.5f));
+		model = rotate(model, currentAngle * TO_RADIANS, glm::vec3(0.f, 1.f, 0.f));
+		model = scale(model, glm::vec3(0.5f, 0.8f, 0.5f));
 
 		glUniformMatrix4fv(uniformModel, 1.f, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1.f, GL_FALSE, glm::value_ptr(projection));
 		
 		glBindVertexArray(vaoId);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, iboId);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
 
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
+
 		glUseProgram(0);
 
 		glfwSwapBuffers(mainWindow);
