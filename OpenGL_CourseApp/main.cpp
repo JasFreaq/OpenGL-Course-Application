@@ -10,7 +10,7 @@ using namespace std;
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "GLWindow.h"
+#include "CustomWindow.h"
 #include "Mesh.h"
 #include "Shader.h"
 
@@ -49,7 +49,7 @@ void CreateShader()
 
 int main()
 {
-	GLWindow window = GLWindow();
+	CustomWindow window = CustomWindow();
 	window.Initialise();
 
 	CreatePyramid();

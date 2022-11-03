@@ -5,18 +5,18 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-class GLWindow
+class CustomWindow
 {
 
 	const char* WINDOW_TITLE = "Test Window";
 
 public:
 
-	GLWindow();
+	CustomWindow();
 
-	GLWindow(GLint windowWidth, GLint windowHeight);
+	CustomWindow(GLint windowWidth, GLint windowHeight);
 
-	~GLWindow();
+	~CustomWindow();
 
 	int Initialise();
 
@@ -25,6 +25,12 @@ public:
 	GLint GetBufferHeight() const { return bufferHeight; }
 
 	bool ShouldCloseWindow() const { return glfwWindowShouldClose(mainWindow); }
+
+	bool* GetKeys() { return keys; }
+
+	GLfloat GetDelX();
+
+	GLfloat GetDelY();
 
 	void SwapBuffers() const { glfwSwapBuffers(mainWindow); }
 
@@ -35,5 +41,15 @@ private:
 
 	GLFWwindow* mainWindow;
 
+	bool keys[1024];
+
+	bool hasMouseFirstMoved;
+	GLfloat lastX, lastY, delX, delY;
+
+	static void HandleKeys(GLFWwindow* window, int key, int code, int action, int mode);
+
+	static void HandleMouse(GLFWwindow* window, double xPos, double yPos);
+
+	void CreateCallbacks();
 };
 
