@@ -119,10 +119,7 @@ void CustomWindow::HandleKeys(GLFWwindow* window, int key, int code, int action,
 void CustomWindow::HandleMouse(GLFWwindow* window, double xPos, double yPos)
 {
 	CustomWindow* customWindow = static_cast<CustomWindow*>(glfwGetWindowUserPointer(window));
-
-	customWindow->lastX = xPos;
-	customWindow->lastY = yPos;
-
+		
 	if (customWindow->hasMouseFirstMoved)
 	{
 		customWindow->delX = xPos - customWindow->lastX;
@@ -131,7 +128,10 @@ void CustomWindow::HandleMouse(GLFWwindow* window, double xPos, double yPos)
 	else
 	{
 		customWindow->hasMouseFirstMoved = true;
-	}	
+	}
+
+	customWindow->lastX = xPos;
+	customWindow->lastY = yPos;
 }
 
 void CustomWindow::CreateCallbacks()

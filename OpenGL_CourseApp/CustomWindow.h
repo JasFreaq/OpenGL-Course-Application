@@ -43,7 +43,7 @@ private:
 
 	bool keys[1024];
 
-	bool hasMouseFirstMoved;
+	bool hasMouseFirstMoved = false;
 	GLfloat lastX, lastY, delX, delY;
 
 	static void HandleKeys(GLFWwindow* window, int key, int code, int action, int mode);

@@ -4,6 +4,7 @@ Shader::Shader()
 {
 	shaderId = 0;
 	uniformModel = 0;
+	uniformView = 0;
 	uniformProjection = 0;
 }
 
@@ -56,6 +57,7 @@ void Shader::ClearShader()
 	}
 
 	uniformModel = 0;
+	uniformView = 0;
 	uniformProjection = 0;
 }
 
@@ -94,6 +96,7 @@ void Shader::CompileShader(const char* vShader, const char* fShader)
 	}
 
 	uniformModel = glGetUniformLocation(shaderId, "model");
+	uniformView = glGetUniformLocation(shaderId, "view");
 	uniformProjection = glGetUniformLocation(shaderId, "projection");
 }
 
